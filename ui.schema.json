@@ -1,0 +1,40 @@
+{
+  "ui:order": [
+    "connectionMethod",
+    "server",
+    "port",
+    "database",
+    "username",
+    "connectString",
+    "usePassword",
+    "password",
+    "odbcOptions",
+    "odbcDriver"
+  ],
+  "password": { "ui:widget": "password" },
+  "odbcDriver": {
+    "driver": {
+      "ui:help": "ODBC Driver to use for Server and Port connection method."
+    }
+  },
+  "odbcOptions": {
+    "dbms": {
+      "ui:help": "Defines DSN DBMS flavour for side panel and autocompletion only."
+    },
+    "oracleTableOptions": {
+      "ui:help": "Side panel Tables source (dba_tables, all_tables, user_tables)"
+    },
+    "oracleViewOptions": {
+      "ui:help": "Side panel Tables source (dba_views, all_views, user_views)"
+    },
+    "inaccessibleDatabase": {
+      "ui:help": "Display empty or inaccessible databases in side panel."
+    },
+    "inaccessibleSchema": {
+      "ui:help": "Display empty or inaccessible schemas in side panel."
+    },
+    "showTblRecords": {
+      "ui:help": "Show Table Records query (i.e., magnifier glass in side panel). DBMS will use the DBMS specific query. TOP is SQL server like syntax and LIMIT is MySQL."
+    }
+  }
+}

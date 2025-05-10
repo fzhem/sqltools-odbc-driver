@@ -1,0 +1,281 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "definitions": {
+    "server": {
+      "title": "Server Name",
+      "type": "string",
+      "minLength": 1
+    },
+    "database": {
+      "title": "Database Name",
+      "type": "string",
+      "minLength": 1
+    },
+    "username": {
+      "title": "User Id",
+      "type": "string",
+      "minLength": 1
+    },
+    "usePassword": {
+      "title": "Use password",
+      "type": "string",
+      "enum": [
+        "SQLTools Driver Credentials",
+        "Ask on connect",
+        "Use empty password",
+        "Save password"
+      ],
+      "default": "Use empty password"
+    },
+    "password": {
+      "title": "Password",
+      "type": "string",
+      "minLength": 1
+    },
+    "connectString": {
+      "title": "connectString",
+      "type": "string",
+      "minLength": 1
+    },
+    "odbcDriver": {
+      "type": "object",
+      "title": "ODBC driver",
+      "properties": {
+        "driver": {
+          "type": "string",
+          "default": "SQL Server"
+        }
+      }
+    }
+  },
+  "properties": {
+    "connectionMethod": {
+      "title": "Connect using",
+      "type": "string",
+      "minLength": 1,
+      "enum": ["Server and Port", "Connection String", "DSN"],
+      "default": "DSN"
+    },
+    "odbcOptions": {
+      "type": "object",
+      "title": "ODBC driver specific options",
+      "properties": {
+        "dbms": {
+          "type": "string",
+          "enum": [
+            "IBM Informix",
+            "InterSystems Caché/IRIS",
+            "Microsoft SQL Server",
+            "Oracle",
+            "db.schema.table",
+            "schema.table"
+          ],
+          "default": "Microsoft SQL Server"
+        },
+        "showTblRecords": {
+          "type": "string",
+          "enum": ["DBMS", "TOP", "LIMIT"],
+          "default": "DBMS"
+        }
+      },
+      "dependencies": {
+        "dbms": {
+          "oneOf": [
+            {
+              "properties": {
+                "dbms": {
+                  "enum": ["Oracle"]
+                },
+                "oracleTableOptions": {
+                  "title": "Side panel tables source",
+                  "type": "string",
+                  "enum": ["dba", "all", "user"],
+                  "default": "user"
+                },
+                "oracleViewOptions": {
+                  "title": "Side panel views source",
+                  "type": "string",
+                  "enum": ["dba", "all", "user"],
+                  "default": "user"
+                }
+              },
+              "required": ["oracleTableOptions", "oracleViewOptions"]
+            },
+            {
+              "properties": {
+                "dbms": {
+                  "enum": ["Microsoft SQL Server"]
+                },
+                "inaccessibleDatabase": {
+                  "title": "Display Empty Databases",
+                  "type": "boolean",
+                  "default": true
+                },
+                "inaccessibleSchema": {
+                  "title": "Display Empty Schemas",
+                  "type": "boolean",
+                  "default": true
+                }
+              },
+              "required": ["inaccessibleDatabase", "inaccessibleSchema"]
+            },
+            {
+              "properties": {
+                "dbms": {
+                  "not": {
+                    "enum": ["Oracle", "Microsoft SQL Server"]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "showTblRecords": {
+          "oneOf": [
+            {
+              "properties": {
+                "showTblRecords": {
+                  "enum": ["TOP", "LIMIT"]
+                },
+                "fromClause": {
+                  "title": "FROM clause",
+                  "type": "string",
+                  "enum": [
+                    "db.schema.table",
+                    "db.table",
+                    "schema.table",
+                    "db:schema.table",
+                    "db:table",
+                    "table"
+                  ],
+                  "default": "db.schema.table"
+                }
+              },
+              "required": ["fromClause"]
+            },
+            {
+              "properties": {
+                "showTblRecords": {
+                  "not": {
+                    "enum": ["TOP", "LIMIT"]
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "connectionMethod": {
+      "oneOf": [
+        {
+          "properties": {
+            "connectionMethod": {
+              "enum": ["Server and Port"]
+            },
+            "server": {
+              "title": "Server Name",
+              "type": "string",
+              "minLength": 1
+            },
+            "port": {
+              "title": "Port",
+              "minimum": 1,
+              "default": 1972,
+              "type": "integer"
+            },
+            "database": {
+              "$ref": "#/definitions/database"
+            },
+            "username": {
+              "$ref": "#/definitions/username"
+            },
+            "usePassword": {
+              "$ref": "#/definitions/usePassword"
+            },
+            "odbcDriver": {
+              "$ref": "#/definitions/odbcDriver"
+            }
+          },
+          "required": ["server", "port", "odbcDriver"]
+        },
+        {
+          "properties": {
+            "connectionMethod": {
+              "enum": ["Connection String"]
+            },
+            "connectString": {
+              "title": "Connection String",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["connectString"]
+        },
+        {
+          "properties": {
+            "connectionMethod": {
+              "enum": ["DSN"]
+            },
+            "dsnString": {
+              "title": "Data Source Name",
+              "type": "string",
+              "minLength": 1
+            },
+            "username": {
+              "$ref": "#/definitions/username"
+            },
+            "usePassword": {
+              "$ref": "#/definitions/usePassword"
+            }
+          },
+          "required": ["dsnString"]
+        }
+      ]
+    },
+    "usePassword": {
+      "oneOf": [
+        {
+          "properties": {
+            "usePassword": {
+              "enum": ["Ask on connect"]
+            },
+            "askForPassword": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        {
+          "properties": {
+            "usePassword": {
+              "enum": ["Use empty password"]
+            }
+          }
+        },
+        {
+          "properties": {
+            "usePassword": {
+              "enum": ["Save password"]
+            },
+            "password": {
+              "$ref": "#/definitions/password"
+            }
+          },
+          "required": ["password"]
+        },
+        {
+          "properties": {
+            "usePassword": {
+              "enum": ["SQLTools Driver Credentials"]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "required": ["connectionMethod"]
+}

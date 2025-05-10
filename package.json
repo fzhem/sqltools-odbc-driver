@@ -1,0 +1,89 @@
+{
+  "name": "sqltools-odbc-driver",
+  "displayName": "SQLTools ODBC",
+  "description": "ODBC driver for SQLTools",
+  "version": "2.1.0",
+  "engines": {
+    "vscode": "^1.94.0"
+  },
+  "publisher": "fzhem",
+  "license": "GPL-2.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fzhem/sqltools-odbc-driver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fzhem/sqltools-odbc-driver/issues"
+  },
+  "icon": "icons/default.png",
+  "private": true,
+  "scripts": {
+    "clean": "rimraf out --glob *.vsix",
+    "predev": "npm run clean",
+    "dev": "npm run watch",
+    "esbuild": "esbuild --bundle --external:vscode --external:@mapbox/node-pre-gyp --external:ssh2 --external:cpu-features --platform=node --tsconfig=./tsconfig.json --log-level=info --color=true --format=cjs",
+    "compile:ext": "npm run esbuild -- ./src/extension.ts --outfile=./out/extension.js --define:process.env.PRODUCT=\"'ext'\"",
+    "compile:ls": "npm run esbuild -- ./src/ls/plugin.ts --outfile=./out/ls/plugin.js --define:process.env.PRODUCT=\"'ls'\"",
+    "watch": "concurrently \"npm:watch:*\"",
+    "watch:ext": "npm run compile:ext -- --define:process.env.NODE_ENV=\"'development'\" --sourcemap --watch",
+    "watch:ls": "npm run compile:ls -- --define:process.env.NODE_ENV=\"'development'\" --sourcemap --watch",
+    "prebuild": "npm run clean",
+    "build": "cross-env NODE_ENV=production concurrently \"npm:build:*\"",
+    "build:ext": "npm run compile:ext -- --define:process.env.NODE_ENV=\"'production'\" --minify",
+    "build:ls": "npm run compile:ls -- --define:process.env.NODE_ENV=\"'production'\" --minify",
+    "copy": "cp package.json out && cp -r lib out/lib",
+    "prepackage": "npm run build && npm run copy"
+  },
+  "keywords": [
+    "caché",
+    "informix",
+    "intersystems",
+    "iris",
+    "mssql",
+    "odbc",
+    "oracle",
+    "sqltools-driver"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Formatters",
+    "Other"
+  ],
+  "extensionDependencies": [
+    "mtxr.sqltools"
+  ],
+  "activationEvents": [
+    "*",
+    "onLanguage:sql",
+    "onCommand:sqltools.*"
+  ],
+  "main": "./out/extension.js",
+  "dependencies": {
+    "@sqltools/base-driver": "latest",
+    "@sqltools/types": "latest",
+    "odbc": "^2.4.9",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.94.0",
+    "@vscode/vsce": "^3.3.2",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.25.4",
+    "html-loader": "^5.1.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "binary": {
+    "module_name": "odbc",
+    "module_path": "./lib/bindings/napi-v{napi_build_version}",
+    "host": "https://github.com/IBM/node-odbc/releases/download/v2.4.9",
+    "package_name": "odbc-v2.4.9-{platform}-{arch}-napi-v{napi_build_version}.tar.gz",
+    "napi_versions": [
+      8
+    ]
+  }
+}

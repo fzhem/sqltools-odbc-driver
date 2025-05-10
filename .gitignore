@@ -1,0 +1,10 @@
+.DS_Store
+lib/
+node_modules/
+out/
+releases/
+.vscode
+package-lock.json
+*.js
+*.sql
+*.vsix
