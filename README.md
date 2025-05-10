@@ -19,4 +19,4 @@ SQLTools driver with ODBC support.
 - **SQL Server**: A username is required, even when using a DSN.
 
 ## Screenshots
-![Connection Assistant](https://raw.githubusercontent.com/fzhem/sqltools-odbc-driver/main/screenshots/connection-assistant.jpg)
+![Connection Assistant](https://raw.githubusercontent.com/fzhem/sqltools-odbc-driver/refs/heads/main/screenshots/connection-assistant.jpg)
