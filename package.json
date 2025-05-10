@@ -1,6 +1,6 @@
 {
   "name": "sqltools-odbc-driver",
-  "displayName": "SQLTools ODBC",
+  "displayName": "SQLTools ODBC Driver",
   "description": "ODBC driver for SQLTools",
   "version": "2.1.0",
   "engines": {
