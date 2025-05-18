@@ -66,6 +66,7 @@
           "enum": [
             "IBM Informix",
             "InterSystems Caché/IRIS",
+            "Microsoft Access",
             "Microsoft SQL Server",
             "Oracle",
             "db.schema.table",
