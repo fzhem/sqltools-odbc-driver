@@ -4,9 +4,10 @@ import {
   ContextValue,
   Arg0,
   IQueryOptions,
-  IConnection
+  IConnection,
 } from "@sqltools/types";
 import * as cacheQueries from "./queries/cache-queries";
+import * as msAccessQueries from "./queries/ms-access-queries";
 import * as sqlServerQueries from "./queries/sql-server-queries";
 import * as informixQueries from "./queries/informix-queries";
 import * as oracleQueries from "./queries/oracle-queries";
@@ -21,8 +22,8 @@ import { handleCache } from "./sidepanel/cache";
 import { handleInformix } from "./sidepanel/informix";
 import { handleOracle } from "./sidepanel/oracle";
 import { handleSqlServer } from "./sidepanel/sql-server";
+import { handleMSAccess } from "./sidepanel/ms-access";
 import { handleDbSchemaTable, handleSchemaTable } from "./sidepanel/generic";
-
 
 type Credentials = IConnection<any>; // Adjust as per your actual type
 type GetWorkspaceFolders = IConnection["workspace"]["getWorkspaceFolders"];
@@ -49,6 +50,9 @@ export default class CacheDriver
         break;
       case "InterSystems Caché/IRIS":
         this.queries = cacheQueries;
+        break;
+      case "Microsoft Access":
+        this.queries = msAccessQueries;
         break;
       case "Microsoft SQL Server":
         this.queries = sqlServerQueries;
@@ -171,6 +175,9 @@ export default class CacheDriver
     switch (this.credentials.odbcOptions.dbms) {
       case "InterSystems Caché/IRIS":
         query = `SELECT TOP ${opt.limit} * FROM ${table.schema}.${table.label}`;
+        break;
+      case "Microsoft Access":
+        query = `SELECT TOP ${opt.limit} * FROM ${table.label}`;
         break;
       case "Microsoft SQL Server":
         query = `SELECT TOP ${
@@ -345,6 +352,8 @@ export default class CacheDriver
     switch (this.credentials.odbcOptions.dbms) {
       case "InterSystems Caché/IRIS":
         return handleCache(item, parent, this);
+      case "Microsoft Access":
+        return handleMSAccess(item, parent, this);
       case "Microsoft SQL Server":
         return handleSqlServer(item, parent, this);
       case "IBM Informix":
@@ -364,7 +373,9 @@ export default class CacheDriver
   ): Promise<NSDatabase.IColumn[]> {
     switch (this.credentials.odbcOptions.dbms) {
       case "Microsoft SQL Server":
-        const results = await this.queryResults(this.queries.fetchColumns(parent));
+        const results = await this.queryResults(
+          this.queries.fetchColumns(parent)
+        );
         return results.map((col) => ({
           ...col,
           iconName: col.isPk ? "pk" : col.isFk ? "fk" : null,
@@ -382,7 +393,8 @@ export default class CacheDriver
         const keysFuncInput = Array.from(
           new Set(
             result.map(
-              (item) => `${item.TABLE_CAT},${item.TABLE_SCHEM},${item.TABLE_NAME}`
+              (item) =>
+                `${item.TABLE_CAT},${item.TABLE_SCHEM},${item.TABLE_NAME}`
             )
           )
         ).map((combined) => {
@@ -429,7 +441,9 @@ export default class CacheDriver
         const fkList = Array.from(
           new Set([...fkNames_pkTable, ...fkNames_fkTable])
         );
-        const fkListFiltered = fkList.filter((entry) => !pkList.includes(entry));
+        const fkListFiltered = fkList.filter(
+          (entry) => !pkList.includes(entry)
+        );
 
         const transformedResult = result.map((entry) => {
           const detail =
@@ -459,7 +473,7 @@ export default class CacheDriver
           };
         });
         return transformedResult;
-      }
+    }
   }
 
   public async searchItems(
