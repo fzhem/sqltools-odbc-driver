@@ -2,7 +2,7 @@
   "name": "sqltools-odbc-driver",
   "displayName": "SQLTools ODBC Driver",
   "description": "ODBC driver for SQLTools",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "engines": {
     "vscode": "^1.94.0"
   },

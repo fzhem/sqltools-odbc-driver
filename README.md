@@ -17,6 +17,15 @@ SQLTools driver with ODBC support.
 
 - **Oracle**: A username and password are required, even if a DSN is selected.
 - **SQL Server**: A username is required, even when using a DSN.
+- **MS Access**: You may encounter no read permission on 'MSysObjects' error when navigating the sidepanel.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/fzhem/sqltools-odbc-driver/refs/heads/main/screenshots/msysobjects-error.jpg" />
+</p>
+
+Can be fixed by following this stackoverflow answer: https://stackoverflow.com/a/14669641
+
 
 ## Screenshots
-![Connection Assistant](https://raw.githubusercontent.com/fzhem/sqltools-odbc-driver/refs/heads/main/screenshots/connection-assistant.jpg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/fzhem/sqltools-odbc-driver/refs/heads/main/screenshots/connection-assistant.jpg" />
+</p>
