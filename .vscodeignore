@@ -10,7 +10,6 @@ src/**
 **/*.bat
 **/*.sql
 lib
-node-informixdb
 node_modules
 !node_modules/@mapbox/node-pre-gyp
 !node_modules/nopt
