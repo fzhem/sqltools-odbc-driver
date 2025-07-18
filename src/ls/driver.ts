@@ -24,15 +24,16 @@ import { handleOracle } from "./sidepanel/oracle";
 import { handleSqlServer } from "./sidepanel/sql-server";
 import { handleMSAccess } from "./sidepanel/ms-access";
 import { handleDbSchemaTable, handleSchemaTable } from "./sidepanel/generic";
+import { identifyVendor } from "./getDriver";
 
 type Credentials = IConnection<any>; // Adjust as per your actual type
 type GetWorkspaceFolders = IConnection["workspace"]["getWorkspaceFolders"];
 
 export default class CacheDriver
   extends AbstractDriver<any, any>
-  implements IConnectionDriver
-{
+  implements IConnectionDriver {
   private queries: any;
+  private resolvedVendor?: string;
 
   constructor(
     credentials: Credentials,
@@ -42,9 +43,27 @@ export default class CacheDriver
     this.configureDriver();
   }
 
+  private async getResolvedVendor(): Promise<string | null> {
+    if (this.resolvedVendor) return this.resolvedVendor;
+
+    let vendor = this.credentials.odbcOptions.dbms;
+    if (vendor === "Auto-detect") {
+      try {
+        vendor = await identifyVendor(this.credentials.dsnString);
+      } catch {
+        vendor = null;
+      }
+    }
+
+    this.resolvedVendor = vendor;
+    return vendor;
+  }
+
   // Method to configure the driver
-  configureDriver() {
-    switch (this.credentials.odbcOptions.dbms) {
+  async configureDriver() {
+    const vendor = await this.getResolvedVendor()
+    console.log('vendor', vendor);
+    switch (vendor) {
       case "IBM Informix":
         this.queries = informixQueries;
         break;
@@ -147,7 +166,9 @@ export default class CacheDriver
 
   public async testConnection() {
     await this.open();
-    switch (this.credentials.odbcOptions.dbms) {
+    const vendor = await this.getResolvedVendor()
+    console.log('vendor', vendor);
+    switch (vendor) {
       case "IBM Informix":
         await this.query("select 1 from table(set{1})", {});
         break;
@@ -172,7 +193,9 @@ export default class CacheDriver
   ): Promise<NSDatabase.IResult<any>[]> {
     const conn = await this.open();
     let query: string;
-    switch (this.credentials.odbcOptions.dbms) {
+    const vendor = await this.getResolvedVendor()
+    console.log('vendor', vendor);
+    switch (vendor) {
       case "InterSystems Caché/IRIS":
         query = `SELECT TOP ${opt.limit} * FROM ${table.schema}.${table.label}`;
         break;
@@ -180,13 +203,12 @@ export default class CacheDriver
         query = `SELECT TOP ${opt.limit} * FROM ${table.label}`;
         break;
       case "Microsoft SQL Server":
-        query = `SELECT TOP ${
-          opt.limit
-        } * FROM ${sqlServerQueries.escapeTableName({
-          database: table.database,
-          schema: table.schema,
-          label: table.label,
-        })}`;
+        query = `SELECT TOP ${opt.limit
+          } * FROM ${sqlServerQueries.escapeTableName({
+            database: table.database,
+            schema: table.schema,
+            label: table.label,
+          })}`;
         break;
       case "IBM Informix":
         query = `SELECT * FROM ${table.database}:${table.label} LIMIT ${opt.limit}`;
@@ -349,7 +371,9 @@ export default class CacheDriver
     item,
     parent,
   }: Arg0<IConnectionDriver["getChildrenForItem"]>) {
-    switch (this.credentials.odbcOptions.dbms) {
+    const vendor = await this.getResolvedVendor()
+    console.log('vendor', vendor);
+    switch (vendor) {
       case "InterSystems Caché/IRIS":
         return handleCache(item, parent, this);
       case "Microsoft Access":
@@ -371,7 +395,9 @@ export default class CacheDriver
   private async getColumns(
     parent: NSDatabase.ITable
   ): Promise<NSDatabase.IColumn[]> {
-    switch (this.credentials.odbcOptions.dbms) {
+    const vendor = await this.getResolvedVendor()
+    console.log('vendor', vendor);
+    switch (vendor) {
       case "Microsoft SQL Server":
         const results = await this.queryResults(
           this.queries.fetchColumns(parent)
@@ -497,7 +523,9 @@ export default class CacheDriver
   }
 
   public getStaticCompletions = async () => {
-    switch (this.credentials.odbcOptions.dbms) {
+    const vendor = await this.getResolvedVendor()
+    console.log('vendor', vendor);
+    switch (vendor) {
       case "InterSystems Caché/IRIS":
         return cacheKeywordsCompletion;
       case "Microsoft SQL Server":
