@@ -64,6 +64,7 @@
         "dbms": {
           "type": "string",
           "enum": [
+            "Auto-detect",
             "IBM Informix",
             "InterSystems Caché/IRIS",
             "Microsoft Access",
@@ -72,7 +73,7 @@
             "db.schema.table",
             "schema.table"
           ],
-          "default": "Microsoft SQL Server"
+          "default": "Auto-detect"
         },
         "showTblRecords": {
           "type": "string",
