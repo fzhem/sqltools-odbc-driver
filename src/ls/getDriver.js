@@ -21,7 +21,10 @@ function getDsnDriverInfo(dsnName) {
     const paths = [
       { hive: WinReg.HKCU, key: `\\SOFTWARE\\ODBC\\ODBC.INI\\${dsnName}` },
       { hive: WinReg.HKLM, key: `\\SOFTWARE\\ODBC\\ODBC.INI\\${dsnName}` },
-      { hive: WinReg.HKLM, key: `\\SOFTWARE\\Wow6432Node\\ODBC\\ODBC.INI\\${dsnName}` },
+      {
+        hive: WinReg.HKLM,
+        key: `\\SOFTWARE\\Wow6432Node\\ODBC\\ODBC.INI\\${dsnName}`,
+      },
     ];
 
     const tryNext = (i) => {
@@ -62,7 +65,8 @@ function getDriverNameFromDll(dllPath) {
             !found &&
             !err2 &&
             item &&
-            path.basename(item.value).toLowerCase() === path.basename(dllPath).toLowerCase()
+            path.basename(item.value).toLowerCase() ===
+              path.basename(dllPath).toLowerCase()
           ) {
             found = true;
             return resolve(k.key.split("\\").pop());
@@ -100,9 +104,14 @@ export async function identifyVendor(dsnName) {
     if (matched) {
       console.log(`✅ DSN "${dsnName}" is using driver from: ${matched}`);
     } else {
-      console.log(`❓ DSN "${dsnName}" uses "${driverName}" — unknown vendor 🤷`);
+      console.log(
+        `❓ DSN "${dsnName}" uses "${driverName}" — unknown vendor 🤷`
+      );
     }
+
+    return matched;
   } catch (err) {
     console.error(`❌ ${err.message}`);
+    return null;
   }
 }
