@@ -280,7 +280,7 @@ const keywordsArr = [
   "WRITE",
 ];
 
-const keywordsCompletion: { [w: string]: NSDatabase.IStaticCompletion } =
+const cacheKeywordsCompletion: { [w: string]: NSDatabase.IStaticCompletion } =
   keywordsArr.reduce((agg, word) => {
     agg[word] = {
       label: word,
@@ -297,4 +297,4 @@ const keywordsCompletion: { [w: string]: NSDatabase.IStaticCompletion } =
     return agg;
   }, {});
 
-export default keywordsCompletion;
+export default cacheKeywordsCompletion;

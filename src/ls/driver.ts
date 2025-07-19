@@ -8,6 +8,7 @@ import {
 } from "@sqltools/types";
 import * as cacheQueries from "./queries/cache-queries";
 import * as msAccessQueries from "./queries/ms-access-queries";
+import * as mysqlQueries from "./queries/mysql-queries";
 import * as sqlServerQueries from "./queries/sql-server-queries";
 import * as informixQueries from "./queries/informix-queries";
 import * as oracleQueries from "./queries/oracle-queries";
@@ -16,10 +17,12 @@ import odbc from "odbc";
 import cacheKeywordsCompletion from "./keywords/cache-keywords";
 import informixKeywordsCompletion from "./keywords/informix-keywords";
 import oracleKeywordsCompletion from "./keywords/oracle-keywords";
+import mysqlKeywordsCompletion from "./keywords/mysql-keywords";
 import sqlserverKeywordsCompletion from "./keywords/sqlserver-keywords";
 import AbstractDriver from "@sqltools/base-driver";
 import { handleCache } from "./sidepanel/cache";
 import { handleInformix } from "./sidepanel/informix";
+import { handleMySql } from "./sidepanel/mysql";
 import { handleOracle } from "./sidepanel/oracle";
 import { handleSqlServer } from "./sidepanel/sql-server";
 import { handleMSAccess } from "./sidepanel/ms-access";
@@ -28,10 +31,16 @@ import { identifyVendor } from "./getDriver";
 
 type Credentials = IConnection<any>; // Adjust as per your actual type
 type GetWorkspaceFolders = IConnection["workspace"]["getWorkspaceFolders"];
+const toBool = (v: any) =>
+  v &&
+  (v.toString() === "1" ||
+    v.toString().toLowerCase() === "true" ||
+    v.toString().toLowerCase() === "yes");
 
 export default class CacheDriver
   extends AbstractDriver<any, any>
-  implements IConnectionDriver {
+  implements IConnectionDriver
+{
   private queries: any;
   private resolvedVendor?: string;
 
@@ -61,8 +70,7 @@ export default class CacheDriver
 
   // Method to configure the driver
   async configureDriver() {
-    const vendor = await this.getResolvedVendor()
-    console.log('vendor', vendor);
+    const vendor = await this.getResolvedVendor();
     switch (vendor) {
       case "IBM Informix":
         this.queries = informixQueries;
@@ -75,6 +83,10 @@ export default class CacheDriver
         break;
       case "Microsoft SQL Server":
         this.queries = sqlServerQueries;
+        break;
+      case "MySQL":
+      case "MariaDB":
+        this.queries = mysqlQueries;
         break;
       case "Oracle":
         this.queries = oracleQueries;
@@ -166,11 +178,14 @@ export default class CacheDriver
 
   public async testConnection() {
     await this.open();
-    const vendor = await this.getResolvedVendor()
-    console.log('vendor', vendor);
+    const vendor = await this.getResolvedVendor();
     switch (vendor) {
       case "IBM Informix":
         await this.query("select 1 from table(set{1})", {});
+        break;
+      case "MySQL":
+      case "MariaDB":
+        await this.query("SELECT USER(), CURRENT_USER()", {});
         break;
       case "Oracle":
         await this.query("SELECT SYSDATE FROM dual", {});
@@ -193,22 +208,26 @@ export default class CacheDriver
   ): Promise<NSDatabase.IResult<any>[]> {
     const conn = await this.open();
     let query: string;
-    const vendor = await this.getResolvedVendor()
-    console.log('vendor', vendor);
+    const vendor = await this.getResolvedVendor();
     switch (vendor) {
       case "InterSystems Caché/IRIS":
         query = `SELECT TOP ${opt.limit} * FROM ${table.schema}.${table.label}`;
+        break;
+      case "MySQL":
+      case "MariaDB":
+        query = `SELECT * FROM ${table.database}.${table.label} LIMIT ${opt.limit}`;
         break;
       case "Microsoft Access":
         query = `SELECT TOP ${opt.limit} * FROM ${table.label}`;
         break;
       case "Microsoft SQL Server":
-        query = `SELECT TOP ${opt.limit
-          } * FROM ${sqlServerQueries.escapeTableName({
-            database: table.database,
-            schema: table.schema,
-            label: table.label,
-          })}`;
+        query = `SELECT TOP ${
+          opt.limit
+        } * FROM ${sqlServerQueries.escapeTableName({
+          database: table.database,
+          schema: table.schema,
+          label: table.label,
+        })}`;
         break;
       case "IBM Informix":
         query = `SELECT * FROM ${table.database}:${table.label} LIMIT ${opt.limit}`;
@@ -371,8 +390,7 @@ export default class CacheDriver
     item,
     parent,
   }: Arg0<IConnectionDriver["getChildrenForItem"]>) {
-    const vendor = await this.getResolvedVendor()
-    console.log('vendor', vendor);
+    const vendor = await this.getResolvedVendor();
     switch (vendor) {
       case "InterSystems Caché/IRIS":
         return handleCache(item, parent, this);
@@ -380,6 +398,9 @@ export default class CacheDriver
         return handleMSAccess(item, parent, this);
       case "Microsoft SQL Server":
         return handleSqlServer(item, parent, this);
+      case "MySQL":
+      case "MariaDB":
+        return handleMySql(item, parent, this);
       case "IBM Informix":
         return handleInformix(item, parent, this);
       case "Oracle":
@@ -395,14 +416,30 @@ export default class CacheDriver
   private async getColumns(
     parent: NSDatabase.ITable
   ): Promise<NSDatabase.IColumn[]> {
-    const vendor = await this.getResolvedVendor()
-    console.log('vendor', vendor);
+    const vendor = await this.getResolvedVendor();
     switch (vendor) {
-      case "Microsoft SQL Server":
-        const results = await this.queryResults(
+      case "MySQL":
+      case "MariaDB":
+        const mySqlResults = await this.queryResults(
           this.queries.fetchColumns(parent)
         );
-        return results.map((col) => ({
+        return mySqlResults.map((obj) => {
+          obj.isPk = toBool(obj.isPk);
+          obj.isFk = toBool(obj.isFk);
+
+          return <NSDatabase.IColumn>{
+            ...obj,
+            isNullable: toBool(obj.isNullable),
+            iconName: obj.isPk ? "pk" : obj.isFk ? "fk" : null,
+            childType: ContextValue.NO_CHILD,
+            table: parent,
+          };
+        });
+      case "Microsoft SQL Server":
+        const sqlServerResults = await this.queryResults(
+          this.queries.fetchColumns(parent)
+        );
+        return sqlServerResults.map((col) => ({
           ...col,
           iconName: col.isPk ? "pk" : col.isFk ? "fk" : null,
           childType: ContextValue.NO_CHILD,
@@ -523,13 +560,15 @@ export default class CacheDriver
   }
 
   public getStaticCompletions = async () => {
-    const vendor = await this.getResolvedVendor()
-    console.log('vendor', vendor);
+    const vendor = await this.getResolvedVendor();
     switch (vendor) {
       case "InterSystems Caché/IRIS":
         return cacheKeywordsCompletion;
       case "Microsoft SQL Server":
         return sqlserverKeywordsCompletion;
+      case "MySQL":
+      case "MariaDB":
+        return mysqlKeywordsCompletion;
       case "IBM Informix":
         return informixKeywordsCompletion;
       case "Oracle":
