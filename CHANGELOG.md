@@ -1,3 +1,6 @@
+## 2.4.0
+- Add MySQL/MariaDB sidepanel db explorer
+
 ## 2.3.0
 - Add auto-detection for sidepanel db explorer
 

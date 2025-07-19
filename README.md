@@ -15,6 +15,7 @@ SQLTools driver with ODBC support.
     - InterSystems Caché/IRIS
     - Microsoft Access
     - Microsoft SQL Server
+    - MySQL/MariaDB
     - Oracle
 - **Generic Side Panels**
   Supports general database structures using:
