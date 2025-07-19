@@ -38,7 +38,7 @@ jobs:
         run: npm run prepackage
 
       - name: Install vsce globally
-        run: npm install -g @vscode/vsce@3.3.2
+        run: npm install -g @vscode/vsce
 
       - name: Package extension
         run: vsce package --no-yarn --allow-package-secrets privatekey --allow-star-activation -o . --target linux-x64
@@ -128,7 +128,7 @@ jobs:
         run: npm run prepackage
 
       - name: Install vsce globally
-        run: npm install -g @vscode/vsce@3.3.2
+        run: npm install -g @vscode/vsce
 
       - name: Package extension (Windows)
         if: startsWith(matrix.os, 'windows')
