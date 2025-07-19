@@ -67,8 +67,10 @@
             "Auto-detect",
             "IBM Informix",
             "InterSystems Caché/IRIS",
+            "MariaDB",
             "Microsoft Access",
             "Microsoft SQL Server",
+            "MySQL",
             "Oracle",
             "db.schema.table",
             "schema.table"

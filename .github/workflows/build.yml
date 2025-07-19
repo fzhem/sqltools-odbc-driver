@@ -38,10 +38,10 @@ jobs:
         run: npm run prepackage
 
       - name: Install vsce globally
-        run: npm install -g @vscode/vsce@3.3.2
+        run: npm install -g @vscode/vsce
 
       - name: Package extension
-        run: vsce package --no-yarn --allow-star-activation -o . --target linux-x64
+        run: vsce package --no-yarn --allow-package-secrets privatekey --allow-star-activation -o . --target linux-x64
 
       - name: Fetch latest commit hash (Ubuntu)
         id: get_commit_hash_ubuntu
@@ -128,15 +128,15 @@ jobs:
         run: npm run prepackage
 
       - name: Install vsce globally
-        run: npm install -g @vscode/vsce@3.3.2
+        run: npm install -g @vscode/vsce
 
       - name: Package extension (Windows)
         if: startsWith(matrix.os, 'windows')
-        run: vsce package --no-yarn --allow-star-activation -o . --target win32-x64
+        run: vsce package --no-yarn --allow-package-secrets privatekey --allow-star-activation -o . --target win32-x64
 
       - name: Package extension (Mac OS)
         if: startsWith(matrix.os, 'macos')
-        run: vsce package --no-yarn --allow-star-activation -o . --target darwin-x64
+        run: vsce package --no-yarn --allow-package-secrets privatekey --allow-star-activation -o . --target darwin-x64
 
       - name: Fetch latest commit hash (Windows)
         id: get_commit_hash_windows

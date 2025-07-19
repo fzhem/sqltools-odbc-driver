@@ -4,6 +4,8 @@ const path = require("path");
 const vendorMatchList = [
   { vendor: "IBM Informix", pattern: /informix/i },
   { vendor: "InterSystems Caché/IRIS", pattern: /intersystems|cache|iris/i },
+  { vendor: "MariaDB", pattern: /mariadb/i },
+  { vendor: "MySQL", pattern: /mysql/i },
   {
     vendor: "Microsoft SQL Server",
     pattern: /sql server|sqlsrv|msodbcsql|sqlsrvi?/i,
