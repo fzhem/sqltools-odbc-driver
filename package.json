@@ -64,7 +64,7 @@
     "@sqltools/types": "latest",
     "ini": "^5.0.0",
     "odbc": "^2.4.9",
-    "uuid": "^11.1.0",
+    "uuid": "^13.0.0",
     "winreg": "^1.2.5"
   },
   "devDependencies": {
