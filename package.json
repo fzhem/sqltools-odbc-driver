@@ -62,7 +62,7 @@
   "dependencies": {
     "@sqltools/base-driver": "latest",
     "@sqltools/types": "latest",
-    "ini": "^5.0.0",
+    "ini": "^6.0.0",
     "odbc": "^2.4.9",
     "uuid": "^11.1.0",
     "winreg": "^1.2.5"
